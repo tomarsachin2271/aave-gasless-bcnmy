@@ -4,7 +4,8 @@
   "private": true,
   "dependencies": {
     "@biconomy/mexa": "^2.0.8",
-    "@openzeppelin/contracts": "^3.0.0",
+    "@opengsn/contracts": "^2.2.2",
+    "@openzeppelin/contracts": "^3.4.1",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",

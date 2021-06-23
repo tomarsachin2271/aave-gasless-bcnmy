@@ -1,28 +1,32 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity 0.6.0;
+pragma solidity 0.7.6;
 
-import { ChildERC20 } from "./childERC20.sol";
-import { LendingPool } from "https://github.com/aave/protocol-v2/blob/ice/mainnet-deployment-03-12-2020/contracts/protocol/lendingpool/LendingPool.sol";
-import "./EIP712MetaTransaction.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { ILendingPool } from "./interfaces/ILendingPool.sol";
+import "@opengsn/contracts/src/BaseRelayRecipient.sol";
 
-contract AaveInterface is EIP712MetaTransaction("AaveInterface","1") {
-
-    // address DAI_ADDRESS = 0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD;
-    address DAI_ADDRESS = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
+contract AaveInterface is BaseRelayRecipient {
+    address constant AAVE_LENDING_POOL_ADDRESS = 0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf;
+    ILendingPool public lendingPool = ILendingPool(AAVE_LENDING_POOL_ADDRESS);
     
-    // address public AAVE_LENDING_POOL_ADDRESS = 0xE0fBa4Fc209b4948668006B2bE61711b7f465bAe;
-    address public AAVE_LENDING_POOL_ADDRESS = 0x8dFf5E27EA6b7AC08EbFdf9eB090F32ee9a30fcf;
-    
-    LendingPool public lendingPool = LendingPool(AAVE_LENDING_POOL_ADDRESS);
-    ChildERC20 public childERC20 = ChildERC20(DAI_ADDRESS);  
-    
-    function depositDaiToAave(address onBehalfOf, uint256 amount) public {
-        childERC20.transferFrom(onBehalfOf, address(this), amount);
-        childERC20.approve(AAVE_LENDING_POOL_ADDRESS, amount);
-        lendingPool.deposit(DAI_ADDRESS, amount, onBehalfOf, 0);
+    constructor(address _trustedForwarder) {
+        trustedForwarder = _trustedForwarder;
     }
-    
 
+    function versionRecipient() external virtual override view returns (string memory) {
+        return "1.0.0";
+    }
+
+    function deposit(
+        address asset,
+        uint256 amount,
+        address onBehalfOf,
+        uint16 referralCode) public {
+        IERC20 erc20Asset = IERC20(asset);  
+        erc20Asset.transferFrom(_msgSender(), address(this), amount);
+        erc20Asset.approve(AAVE_LENDING_POOL_ADDRESS, amount);
+        lendingPool.deposit(asset, amount, onBehalfOf, referralCode);
+    }
 }
 //AAVE 0x4c78E97D1E2d15Ad40E6D6C53FD01982639c87C9
 //DAI 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063
