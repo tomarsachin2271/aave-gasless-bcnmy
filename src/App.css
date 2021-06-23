@@ -10,3 +10,8 @@
   color: white;
   padding: 0 20vw
 }
+
+.deposit-status {
+  text-align: center;
+  margin-bottom: 40px;
+}
